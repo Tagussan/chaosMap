@@ -8,9 +8,9 @@ module myMult18(CLK, RST, done, dataa, datab, result);
    reg [35:0] temp, result;
    reg done;
    always @(posedge CLK) begin
-      if(index >= 17) begin
-         done <= 1;
-         result <= temp;
+      if(index > 17) begin
+         result = temp;
+         done = 1;
       end else if(datab[index] == 1) begin
          temp <= temp + (dataa << index);
          index <= index + 1;

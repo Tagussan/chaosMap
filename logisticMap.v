@@ -120,9 +120,10 @@ module logisticCycleTiny(CLK, CLK_calc,RST, done, dzero, times, mu, result);
          if(ind == times) begin
             done <= 1;
          end else begin
-            calc_start <= 1;
-            result <= funcOut;
-            ind <= ind + 1;
+            calc_start = 1;
+            result = funcOut;
+            ind = ind + 1;
+            calc_start = 0;
          end
       end
    end
@@ -145,7 +146,8 @@ module logisticFuncTiny(x,mu,y,CLK,calc_start,done);
    reg [34:0] enlarge;
    reg [1:0] progress;
    reg RST;
-   myMult18 myMult18(.CLK(CLK), .RST(RST), .done(done), .dataa(dataa), .datab(datab), .result(result));
+   wire submult_done;
+   myMult18 myMult18(.CLK(CLK), .RST(RST), .done(done), .dataa(dataa), .datab(datab), .result(result), .done(submult_done));
    always @(posedge calc_start) begin
       dataa = x;
       datab = (17'h1_0000_0000_0000_0000 - x);
@@ -154,7 +156,7 @@ module logisticFuncTiny(x,mu,y,CLK,calc_start,done);
       y = 0;
       RST = 0;
    end
-   always @(posedge done) begin
+   always @(posedge submult_done) begin
       if(progress == 0) begin
          RST = 1;
          term = result;
