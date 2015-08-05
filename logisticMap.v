@@ -26,7 +26,7 @@ module logisticModule(CLK, RST, red, green, blue, row, col, mu);
       else if (40 < col && col <= 50 && D_row <= row && row <= D_row + 5)
          colorselect = 3'b010;
       else
-         colorselect = 3'b000;
+         colorselect = 3'b111;
    endfunction
    assign colorbits = colorselect(row, col);
    assign {red,green,blue} = colorbits;
