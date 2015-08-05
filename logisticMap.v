@@ -45,7 +45,7 @@ module logisticCycle(CLK, RST, done, dzero, times, mu, result);
    wire [16:0] funcIn, funcOut;
    output [16:0] result;
    output done;
-   reg [7:0] ind; //ind as how many times mapped
+   reg [8:0] ind; //ind as how many times mapped
    reg done;
    reg [16:0] result;
    always @(posedge CLK) begin

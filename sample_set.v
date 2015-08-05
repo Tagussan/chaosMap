@@ -12,7 +12,7 @@ module sample_set(CLK, RST, sample_num, mu, maxrepeat, calc_clock);
       case (sample_num)
          0:     select_mu = 18'b10_1101_1011_1101_1111;
          1:     select_mu = 18'b11_1101_1011_1101_1111;
-         2:     select_mu = 18'b11_1101_1011_1101_1111;
+         2:     select_mu = 18'b11_1101_1011_1100_1111;
          default: select_mu = 0;
       endcase
    endfunction
@@ -28,8 +28,8 @@ module sample_set(CLK, RST, sample_num, mu, maxrepeat, calc_clock);
    function select_CLK;
       input [5:0] sample_num;
       case (sample_num)
-         0:     select_CLK = CLK_VERY_SLOW;
-         1:     select_CLK = CLK_VERY_SLOW;
+         0:     select_CLK = CLK_SLOW;
+         1:     select_CLK = CLK_SLOW;
          2:     select_CLK = CLK_VERY_SLOW;
          default:  select_CLK = CLK_SLOW;
       endcase

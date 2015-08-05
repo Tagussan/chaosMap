@@ -1,6 +1,7 @@
-module display(row, col, red, green, blue, color, up, down, left, right, vnotactive, CLK, RST);
+module display(row, col, red, green, blue, key_c, key_d, vnotactive, CLK, RST);
 input [9:0] row, col;
-input CLK, RST, color, up, down, left, right, vnotactive;
+input CLK, RST, vnotactive;
+input [4:0] key_c, key_d;
 output red, green, blue;
 wire CLK_VERY_SLOW, CLK_SLOW;
 wire red_bar, green_bar, blue_bar;
@@ -9,10 +10,11 @@ wire [8:0] maxrepeat;
 wire calc_clock;
 reg red, green, blue;
 reg calc_enable, disp_enable;
-reg [9:0] originX, originY;
-reg [1:0] key_state;
+reg [4:0] sample_num;
 reg [16:0] result;
+reg [1:0] key_state;
 reg [4:0] startup_delay;
+
 always @(posedge CLK or negedge RST) begin
    if(!RST) begin
       red <= 1'b1;
@@ -28,7 +30,7 @@ end
 
 logisticModule logisticModule(.CLK(calc_clock & calc_enable), .RST(RST), .red(red_bar), .green(green_bar), .blue(blue_bar), .row(row), .col(col), .mu(mu), .maxrepeat(maxrepeat));
 
-sample_set sample_set(.CLK(CLK), .RST(RST), .sample_num(1), .mu(mu), .maxrepeat(maxrepeat), .calc_clock(calc_clock));
+sample_set sample_set(.CLK(CLK), .RST(RST), .sample_num(sample_num), .mu(mu), .maxrepeat(maxrepeat), .calc_clock(calc_clock));
 
 divider_slow divider_slow(.clk(CLK), .rst(RST), .clkout(CLK_SLOW));
 divider_very_slow divider_very_slow(.clk(CLK), .rst(RST), .clkout(CLK_VERY_SLOW));
@@ -52,23 +54,28 @@ end
 
 always @(posedge CLK or negedge RST) begin
    if(!RST) begin
-      originX <= 10'd300;
-      originY <= 10'd200;
-      key_state <= 2'd0;
+      key_state <= 'd0;
    end
    else begin
       case(key_state)
          2'd0: begin
-            if(vnotactive) key_state <= 2'd1;
+            if(vnotactive) 
+               key_state <= 2'd1;
          end
-      2'd1: begin
-         if(!up) originY <= originY - 10'd2;
-         else if(!down) originY <= originY + 10'd2;
-         if(!left) originX <= originX - 10'd2;
-         else if(!right) originX <= originX + 10'd2;
-         if(!up|!down|!left|!right) key_state <= 2'd2;
-         else if(!vnotactive) key_state <= 2'd0;
-      end
+         2'd1: begin
+            if(!key_d[0]) 
+               sample_num <= 0;
+            else if(!key_d[1]) 
+               sample_num <= 1;
+            else if(!key_d[2]) 
+               sample_num <= 2;
+            else if(!key_d[3]) 
+               sample_num <= 3;
+            if(!key_d[0] || !key_d[1] || !key_d[2] || !key_d[3])
+               key_state <= 2'd2;
+            else if(!vnotactive) 
+               key_state <= 2'd0;
+         end
       2'd2: begin
          if(!vnotactive) key_state <= 2'd0;
       end
