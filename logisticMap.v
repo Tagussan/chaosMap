@@ -40,7 +40,7 @@ module logisticCycle(CLK, RST, done, dzero, times, mu, result);
 //repeating and stop sanitary
    input CLK, RST;
    input [16:0] dzero;
-   input [16:0] times;
+   input [8:0] times;
    input [17:0] mu;
    wire [16:0] funcIn, funcOut;
    output [16:0] result;

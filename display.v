@@ -4,9 +4,9 @@ input CLK, RST, color, up, down, left, right, vnotactive;
 output red, green, blue;
 wire CLK_VERY_SLOW, CLK_SLOW;
 wire red_bar, green_bar, blue_bar;
-wire calc_clock_in, calc_clock_out;
 wire [17:0] mu;
 wire [8:0] maxrepeat;
+wire calc_clock;
 reg red, green, blue;
 reg calc_enable, disp_enable;
 reg [9:0] originX, originY;
@@ -25,13 +25,15 @@ always @(posedge CLK or negedge RST) begin
    end else begin
    end
 end
-assign calc_clock_in = calc_clock_out;
 
-logisticModule logisticModule(.CLK(CLK), .RST(RST), .red(red_bar), .green(green_bar), .blue(blue_bar), .row(row), .col(col), .mu(18'b10_1101_1011_1101_1111), .maxrepeat(500));
+logisticModule logisticModule(.CLK(calc_clock & calc_enable), .RST(RST), .red(red_bar), .green(green_bar), .blue(blue_bar), .row(row), .col(col), .mu(mu), .maxrepeat(maxrepeat));
 
-//sample_set sample_set(.CLK(CLK), .RST(RST), .sample_num(1), .mu(mu), .maxrepeat(maxrepeat), .calc_clock(calc_clock_out));
+sample_set sample_set(.CLK(CLK), .RST(RST), .sample_num(1), .mu(mu), .maxrepeat(maxrepeat), .calc_clock(calc_clock));
 
-always @(posedge CLK_SLOW or negedge RST) begin
+divider_slow divider_slow(.clk(CLK), .rst(RST), .clkout(CLK_SLOW));
+divider_very_slow divider_very_slow(.clk(CLK), .rst(RST), .clkout(CLK_VERY_SLOW));
+
+always @(posedge CLK_VERY_SLOW or negedge RST) begin
    if(!RST) begin
       startup_delay <= 0;
       calc_enable <= 0;
@@ -45,6 +47,8 @@ always @(posedge CLK_SLOW or negedge RST) begin
       startup_delay <= startup_delay + 1;
    end
 end
+
+
 
 always @(posedge CLK or negedge RST) begin
    if(!RST) begin
