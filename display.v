@@ -10,6 +10,7 @@ wire [8:0] maxrepeat;
 wire calc_clock;
 reg red, green, blue;
 reg calc_enable, disp_enable;
+reg logistic_RST;
 reg [4:0] sample_num;
 reg [16:0] result;
 reg [1:0] key_state;
@@ -28,7 +29,7 @@ always @(posedge CLK or negedge RST) begin
    end
 end
 
-logisticModule logisticModule(.CLK(calc_clock & calc_enable), .RST(RST), .red(red_bar), .green(green_bar), .blue(blue_bar), .row(row), .col(col), .mu(mu), .maxrepeat(maxrepeat));
+logisticModule logisticModule(.CLK(calc_clock & calc_enable), .RST(logistic_RST), .red(red_bar), .green(green_bar), .blue(blue_bar), .row(row), .col(col), .mu(mu), .maxrepeat(maxrepeat));
 
 sample_set sample_set(.CLK(CLK), .RST(RST), .sample_num(sample_num), .mu(mu), .maxrepeat(maxrepeat), .calc_clock(calc_clock));
 
@@ -63,17 +64,24 @@ always @(posedge CLK or negedge RST) begin
                key_state <= 2'd1;
          end
          2'd1: begin
-            if(!key_d[0]) 
+            if(!key_d[0]) begin
                sample_num <= 0;
-            else if(!key_d[1]) 
+               logistic_RST <= 0;
+            end else if(!key_d[1]) begin 
                sample_num <= 1;
-            else if(!key_d[2]) 
+               logistic_RST <= 0;
+            end else if(!key_d[2]) begin
                sample_num <= 2;
-            else if(!key_d[3]) 
+               logistic_RST <= 0;
+            end else if(!key_d[3]) begin
                sample_num <= 3;
-            if(!key_d[0] || !key_d[1] || !key_d[2] || !key_d[3])
+               logistic_RST <= 0;
+            end else begin
+               logistic_RST <= 1;
+            end
+            if(!key_d[0] || !key_d[1] || !key_d[2] || !key_d[3]) begin
                key_state <= 2'd2;
-            else if(!vnotactive) 
+            end else if(!vnotactive) 
                key_state <= 2'd0;
          end
       2'd2: begin
