@@ -29,7 +29,7 @@ always @(posedge CLK or negedge RST) begin
    end
 end
 
-logisticModule logisticModule(.CLK(calc_clock & calc_enable), .RST(logistic_RST), .red(red_bar), .green(green_bar), .blue(blue_bar), .row(row), .col(col), .mu(mu), .maxrepeat(maxrepeat));
+logisticModule logisticModule(.CLK(calc_clock & calc_enable), .CLK_calc(CLK), .RST(logistic_RST), .red(red_bar), .green(green_bar), .blue(blue_bar), .row(row), .col(col), .mu(mu), .maxrepeat(maxrepeat));
 
 sample_set sample_set(.CLK(CLK), .RST(RST), .sample_num(sample_num), .mu(mu), .maxrepeat(maxrepeat), .calc_clock(calc_clock));
 
