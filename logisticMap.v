@@ -1,12 +1,12 @@
-module logisticModule(CLK, RST, red, green, blue, row, col, mu);
+module logisticModule(CLK, RST, red, green, blue, row, col, mu, maxrepeat);
    input CLK, RST;
+   input [8:0] maxrepeat;
    output red, green, blue;
    input [9:0] row, col;
    input [17:0] mu;
    wire [16:0] A_result, B_result, C_result, D_result;
    wire [9:0] A_row, B_row, C_row, D_row;
    wire [2:0] colorbits;
-   parameter maxrepeat = 256;
    logisticCycle A_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0000), .times(maxrepeat), .mu(mu), .result(A_result));
    logisticCycle B_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0001), .times(maxrepeat), .mu(mu), .result(B_result));
    logisticCycle C_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0010), .times(maxrepeat), .mu(mu), .result(C_result));

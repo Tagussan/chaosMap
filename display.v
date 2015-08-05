@@ -2,18 +2,17 @@ module display(row, col, red, green, blue, color, up, down, left, right, vnotact
 input [9:0] row, col;
 input CLK, RST, color, up, down, left, right, vnotactive;
 output red, green, blue;
-wire CLK_SLOW;
-wire [16:0] logistic_result;
+wire CLK_VERY_SLOW, CLK_SLOW;
 wire red_bar, green_bar, blue_bar;
+wire calc_clock_in, calc_clock_out;
+wire [17:0] mu;
+wire [8:0] maxrepeat;
 reg red, green, blue;
 reg calc_enable, disp_enable;
 reg [9:0] originX, originY;
 reg [1:0] key_state;
 reg [16:0] result;
 reg [4:0] startup_delay;
-divider divider(.clk(CLK), .rst(RST), .clkout(CLK_SLOW));
-//logisticCycle logisticCycle(.CLK(CLK_SLOW), .Dset(!RST), .dzero(17'b0_1000_0010_0100_0000), .times(16'd1024), .mu(18'b11_1111_1011_1101_1111), .result(logistic_result));
-//logisticFunc(.x(16'b0111_1111_1111_1111), .mu(18'b01_1111_1111_1111_1111), .y(logistic_result));
 always @(posedge CLK or negedge RST) begin
    if(!RST) begin
       red <= 1'b1;
@@ -26,8 +25,11 @@ always @(posedge CLK or negedge RST) begin
    end else begin
    end
 end
+assign calc_clock_in = calc_clock_out;
 
-logisticModule logisticModule(.CLK(CLK_SLOW & calc_enable), .RST(calc_enable), .red(red_bar), .green(green_bar), .blue(blue_bar), .row(row), .col(col), .mu(18'b11_1111_1011_1101_1111));
+logisticModule logisticModule(.CLK(CLK), .RST(RST), .red(red_bar), .green(green_bar), .blue(blue_bar), .row(row), .col(col), .mu(18'b10_1101_1011_1101_1111), .maxrepeat(500));
+
+//sample_set sample_set(.CLK(CLK), .RST(RST), .sample_num(1), .mu(mu), .maxrepeat(maxrepeat), .calc_clock(calc_clock_out));
 
 always @(posedge CLK_SLOW or negedge RST) begin
    if(!RST) begin
