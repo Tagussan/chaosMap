@@ -7,7 +7,7 @@ module logisticModule(CLK,CLK_calc, RST, red, green, blue, row, col, mu, maxrepe
    wire [16:0] A_result, B_result, C_result, D_result, E_result, F_result, G_result;
    wire [9:0] A_row, B_row, C_row, D_row, E_row, F_row, G_row;
    wire [2:0] colorbits;
-//   logisticCycleTiny A_cycle(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0000), .times(maxrepeat), .mu(mu), .result(A_result));
+   logisticCycleTiny A_cycle(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0000), .times(maxrepeat), .mu(mu), .result(A_result));
 //OK   myMult18 myMult18(.CLK(CLK_calc), .RST(RST), .calc_start(1), .dataa(17'b0_1000_0010_0100_0001), .datab(18'b10_1101_1011_1101_1111), .result(A_result));
 //OK   logisticFuncTiny A_Tiny(.CLK(CLK_calc), .calc_start(1), .x(17'b0_1000_0010_0100_0001), .mu(18'b10_1101_1011_1101_1111), .y(A_result));
    logisticCycle B_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0001), .times(maxrepeat), .mu(mu), .result(B_result));
@@ -102,15 +102,15 @@ module logisticCycleTiny(CLK, CLK_calc,RST, done, dzero, times, mu, result);
    input [8:0] times;
    input [17:0] mu;
    wire [16:0] funcIn, funcOut;
-   wire calc_start_wire, calc_done_wire;
    output [16:0] result;
    output done;
    reg [8:0] ind; //ind as how many times mapped
    reg done;
    reg [16:0] result;
-   reg [1:0] progress;
+   wire calc_done_wire;
    reg calc_start;
    reg calc_done;
+   reg [3:0] progress;
    always @(posedge CLK) begin
       if(RST == 0 || ind == 0) begin
          done <= 'b0;
@@ -122,15 +122,21 @@ module logisticCycleTiny(CLK, CLK_calc,RST, done, dzero, times, mu, result);
          if(ind == times) begin
             done <= 1;
          end else begin
-            calc_start = 1;
-            result = funcOut;
-            ind = ind + 1;
-            calc_start = 0;
+            if(progress == 0) begin
+               calc_start <= 1;
+               progress <= 1;
+            end else if(progress == 1 && calc_done_wire == 1) begin
+               result <= funcOut;
+               ind <= ind + 1;
+               progress <= 2;
+            end else if(progress == 2) begin
+               calc_start <= 0;
+               progress <= 0;
+            end
          end
       end
    end
-   assign calc_start_wire = calc_start;
-   logisticFuncTiny logisticFuncTiny(.x(result), .mu(mu), .y(funcOut), .CLK(CLK_calc), .calc_start(calc_start_wire), .done(calc_done_wire));
+   logisticFuncTiny logisticFuncTiny(.x(result), .mu(mu), .y(funcOut), .CLK(CLK_calc), .calc_start(calc_start), .done(calc_done_wire));
 endmodule
 
 module logisticFuncTiny(x,mu,y,CLK,calc_start,done);
