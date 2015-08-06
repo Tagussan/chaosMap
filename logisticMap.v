@@ -7,7 +7,9 @@ module logisticModule(CLK,CLK_calc, RST, red, green, blue, row, col, mu, maxrepe
    wire [16:0] A_result, B_result, C_result, D_result, E_result, F_result, G_result;
    wire [9:0] A_row, B_row, C_row, D_row, E_row, F_row, G_row;
    wire [2:0] colorbits;
-   logisticCycleTiny A_cycle(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0000), .times(maxrepeat), .mu(mu), .result(A_result));
+//   logisticCycleTiny A_cycle(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0000), .times(maxrepeat), .mu(mu), .result(A_result));
+//OK   myMult18 myMult18(.CLK(CLK_calc), .RST(RST), .calc_start(1), .dataa(17'b0_1000_0010_0100_0001), .datab(18'b10_1101_1011_1101_1111), .result(A_result));
+//OK   logisticFuncTiny A_Tiny(.CLK(CLK_calc), .calc_start(1), .x(17'b0_1000_0010_0100_0001), .mu(18'b10_1101_1011_1101_1111), .y(A_result));
    logisticCycle B_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0001), .times(maxrepeat), .mu(mu), .result(B_result));
    logisticCycle C_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0010), .times(maxrepeat), .mu(mu), .result(C_result));
    logisticCycle D_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0011), .times(maxrepeat), .mu(mu), .result(D_result));
@@ -136,7 +138,6 @@ module logisticFuncTiny(x,mu,y,CLK,calc_start,done);
    input [17:0] mu;
    output [16:0] y;
    reg [17:0] dataa,datab;
-   reg [35:0] result;
    reg [16:0] y;
    input CLK;
    input calc_start;
@@ -144,31 +145,50 @@ module logisticFuncTiny(x,mu,y,CLK,calc_start,done);
    reg done;
    reg [33:0] term;
    reg [34:0] enlarge;
-   reg [1:0] progress;
+   reg [3:0] progress;
    reg RST;
    wire submult_done;
-   myMult18 myMult18(.CLK(CLK), .RST(RST), .done(done), .dataa(dataa), .datab(datab), .result(result), .done(submult_done));
-   always @(posedge calc_start) begin
-      dataa = x;
-      datab = (17'h1_0000_0000_0000_0000 - x);
-      progress = 0;
-      done = 0;
-      y = 0;
-      RST = 0;
-   end
-   always @(posedge submult_done) begin
-      if(progress == 0) begin
-         RST = 1;
-         term = result;
-         dataa = mu;
-         datab = term[33:16];
-         progress = 1;
-         RST = 0;
-      end else if(progress == 1) begin
-         RST = 1;
-         enlarge = result;
-         y = enlarge[34:18];
-         done = 1;
+   wire [35:0] submult_result;
+   reg submult_start;
+   myMult18 myMult18(.CLK(CLK), .RST(RST), .dataa(dataa), .datab(datab), .result(submult_result), .done(submult_done), .calc_start(submult_start));
+   always @(posedge CLK) begin
+      if(calc_start == 0) begin
+         progress <= 0;
+         submult_start <= 0;
+         done <= 0;
+         y <= 0;
+         RST <= 0;
+      end else begin
+         if(progress == 0) begin
+            RST <= 0;
+            dataa <= x;
+            datab <= (17'h1_0000_0000_0000_0000 - x);
+            progress <= 1;
+            submult_start <= 0;
+         end else if(progress == 1) begin
+            RST <= 1;
+            submult_start <= 1;
+            progress <= 2;
+         end else if(progress == 2 && submult_done == 1) begin
+            term <= submult_result;
+            progress <= 3;
+         end else if(progress == 3) begin
+            RST <= 0;
+            dataa <= mu;
+            datab <= term[33:16];
+            progress <= 4;
+            submult_start <= 0;
+         end else if(progress == 4) begin
+            RST <= 1;
+            submult_start <= 1;
+            progress <= 5;
+         end else if(progress == 5 && submult_done == 1) begin
+            enlarge <= submult_result;
+            RST <= 0;
+            y <= enlarge[34:18];
+            done <= 1;
+         end else begin
+         end
       end
    end
 endmodule
