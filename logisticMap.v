@@ -5,12 +5,21 @@ module logisticModule(CLK,CLK_calc, RST, red, green, blue, row, col, mu, maxrepe
    input [9:0] row, col;
    input [17:0] mu;
    wire [16:0] A_result, B_result, C_result, D_result, E_result, F_result, G_result;
+   wire [33:0] B_result_dbg;
+   wire [34:0] B_result_dbgdbg;
+   wire [34:0] A_result_dbgdbg;
    wire [9:0] A_row, B_row, C_row, D_row, E_row, F_row, G_row;
    wire [2:0] colorbits;
    logisticCycleTiny A_cycle(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0000), .times(maxrepeat), .mu(mu), .result(A_result));
-//OK   myMult18 myMult18(.CLK(CLK_calc), .RST(RST), .calc_start(1), .dataa(17'b0_1000_0010_0100_0001), .datab(18'b10_1101_1011_1101_1111), .result(A_result));
-//OK   logisticFuncTiny A_Tiny(.CLK(CLK_calc), .calc_start(1), .x(17'b0_1000_0010_0100_0001), .mu(18'b10_1101_1011_1101_1111), .y(A_result));
+   //myMult18 myMult18(.CLK(CLK_calc), .RST(RST), .calc_start(RST), .dataa(B_result_dbg[33:16]), .datab(mu), .result(A_result_dbgdbg));
+   //assign A_result = A_result_dbgdbg[34:18];
+   //logisticFuncTiny A_Tiny(.CLK(CLK_calc), .calc_start(RST), .x(17'b0_1000_0010_0100_0001), .mu(mu), .y(B_result));
    logisticCycle B_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0001), .times(maxrepeat), .mu(mu), .result(B_result));
+   
+   //assign B_result_dbg = (17'b0_1000_0010_0100_0001 * (17'h1_0000_0000_0000_0000 - 17'b0_1000_0010_0100_0001));
+   //assign B_result_dbgdbg = mu * B_result_dbg[33:16];
+   //assign B_result = B_result_dbgdbg[34:18];
+   
    logisticCycle C_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0010), .times(maxrepeat), .mu(mu), .result(C_result));
    logisticCycle D_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0011), .times(maxrepeat), .mu(mu), .result(D_result));
    logisticCycle E_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0100), .times(maxrepeat), .mu(mu), .result(E_result));
@@ -86,8 +95,9 @@ module logisticFunc(x,mu,y);
    wire [33:0] term;
    wire [34:0] enlarge;
    assign term = x * (17'h1_0000_0000_0000_0000 - x);
-   assign enlarge = mu * term[33:16];
-   assign y = enlarge[34:18];
+   //assign enlarge = mu * term[33:16];
+   //assign y = enlarge[34:18];
+   assign y = term[16:0]; //for debug
 endmodule
 
 module logisticCycleTiny(CLK, CLK_calc,RST, done, dzero, times, mu, result);
@@ -107,14 +117,15 @@ module logisticCycleTiny(CLK, CLK_calc,RST, done, dzero, times, mu, result);
    reg [8:0] ind; //ind as how many times mapped
    reg done;
    reg [16:0] result;
+   reg [16:0] temp;
    wire calc_done_wire;
    reg calc_start;
    reg calc_done;
    reg [3:0] progress;
    always @(posedge CLK) begin
-      if(RST == 0 || ind == 0) begin
+      if(RST == 0) begin
          done <= 'b0;
-         result <= dzero;
+         temp <= dzero;
          ind <= 1;
          progress <= 0;
          calc_start <= 0;
@@ -122,7 +133,7 @@ module logisticCycleTiny(CLK, CLK_calc,RST, done, dzero, times, mu, result);
          if(ind == times) begin
             done <= 1;
          end else begin
-            if(progress == 0) begin
+            if(progress == 0 && calc_done_wire == 0) begin
                calc_start <= 1;
                progress <= 1;
             end else if(progress == 1 && calc_done_wire == 1) begin
@@ -131,12 +142,15 @@ module logisticCycleTiny(CLK, CLK_calc,RST, done, dzero, times, mu, result);
                progress <= 2;
             end else if(progress == 2) begin
                calc_start <= 0;
+               progress <= 3;
+            end else if(progress == 3 && calc_done_wire == 0) begin
+               temp <= result;
                progress <= 0;
             end
          end
       end
    end
-   logisticFuncTiny logisticFuncTiny(.x(result), .mu(mu), .y(funcOut), .CLK(CLK_calc), .calc_start(calc_start), .done(calc_done_wire));
+   logisticFuncTiny logisticFuncTiny(.x(temp), .mu(mu), .y(funcOut), .CLK(CLK_calc), .calc_start(calc_start), .done(calc_done_wire));
 endmodule
 
 module logisticFuncTiny(x,mu,y,CLK,calc_start,done);
@@ -161,37 +175,48 @@ module logisticFuncTiny(x,mu,y,CLK,calc_start,done);
       if(calc_start == 0) begin
          progress <= 0;
          submult_start <= 0;
+         term <= 0;
+         enlarge <= 0;
+         dataa <= 0;
+         datab <= 0;
          done <= 0;
          y <= 0;
          RST <= 0;
       end else begin
-         if(progress == 0) begin
+         if(progress == 0 && submult_done == 0) begin
             RST <= 0;
             dataa <= x;
             datab <= (17'h1_0000_0000_0000_0000 - x);
             progress <= 1;
             submult_start <= 0;
+            done <= 0;
          end else if(progress == 1) begin
             RST <= 1;
             submult_start <= 1;
             progress <= 2;
+            done <= 0;
          end else if(progress == 2 && submult_done == 1) begin
-            term <= submult_result;
+            term <= submult_result[33:0];
             progress <= 3;
+            done <= 0;
          end else if(progress == 3) begin
             RST <= 0;
             dataa <= mu;
             datab <= term[33:16];
             progress <= 4;
             submult_start <= 0;
-         end else if(progress == 4) begin
+            done <= 0;
+         end else if(progress == 4 && submult_done == 0) begin
             RST <= 1;
             submult_start <= 1;
             progress <= 5;
          end else if(progress == 5 && submult_done == 1) begin
-            enlarge <= submult_result;
-            RST <= 0;
+            enlarge <= submult_result[34:0];
+            progress <= 6;
+         end else if(progress == 6) begin
             y <= enlarge[34:18];
+            progress <= 7;
+         end else if(progress == 7) begin
             done <= 1;
          end else begin
          end
