@@ -11,20 +11,20 @@ module logisticModule(CLK,CLK_calc, RST, red, green, blue, row, col, mu, maxrepe
    wire [34:0] A_result_dbgdbg;
    wire [9:0] A_row, B_row, C_row, D_row, E_row, F_row, G_row;
    wire [2:0] colorbits;
-   logisticCycleTiny A_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0000), .times(maxrepeat), .mu(mu), .result(C_result));
-   logisticCycleTiny B_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0001), .times(maxrepeat), .mu(mu), .result(C_result));
+   logisticCycleTiny A_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0000), .times(maxrepeat), .mu(mu), .result(A_result));
+   logisticCycleTiny B_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0001), .times(maxrepeat), .mu(mu), .result(B_result));
    logisticCycleTiny C_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0010), .times(maxrepeat), .mu(mu), .result(C_result));
    logisticCycleTiny D_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0011), .times(maxrepeat), .mu(mu), .result(D_result));
    logisticCycleTiny E_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0100), .times(maxrepeat), .mu(mu), .result(E_result));
    logisticCycleTiny F_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0101), .times(maxrepeat), .mu(mu), .result(F_result));
    logisticCycleTiny G_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0110), .times(maxrepeat), .mu(mu), .result(G_result));
-   assign A_row Tiny= A_result >> 8;
+   assign A_row = A_result >> 8;
    assign B_row = B_result >> 8;
    assign C_row = C_result >> 8;
    assign D_row = D_result >> 8;
    assign E_row = E_result >> 8;
    assign F_row = F_result >> 8;
-   //assign G_row = G_result >> 8;
+   assign G_row = G_result >> 8;
    function [2:0] colorselect;
       input [9:0] row,col;
       if(0 < col && col <= 110 && A_row <= row && row <= A_row + 5)
@@ -38,9 +38,9 @@ module logisticModule(CLK,CLK_calc, RST, red, green, blue, row, col, mu, maxrepe
       else if (440 < col && col <= 550 && E_row <= row && row <= E_row + 5)
          colorselect = 3'b101;
       else if (550 < col && col <= 660 && F_row <= row && row <= F_row + 5)
-            colorselect = 3'b110;
-      //else if (660 < col && col <= 770 && G_row <= row && row <= G_row + 5)
-      //   colorselect = 3'b000;
+         colorselect = 3'b110;
+      else if (660 < col && col <= 770 && G_row <= row && row <= G_row + 5)
+         colorselect = 3'b000;
       else
          colorselect = 3'b111;
    endfunction
