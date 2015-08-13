@@ -37,7 +37,7 @@ module divider_slow(clk, rst, clkout);
 		else counter <= counter + 24'b1;
 	end
 	
-	assign clkout = counter[19];
+	assign clkout = counter[20];
 endmodule
 
 module chattering_remover(clk, rst, key_in, key_out);

@@ -6,7 +6,7 @@ output red, green, blue;
 wire CLK_VERY_SLOW, CLK_SLOW;
 wire red_bar, green_bar, blue_bar;
 wire [17:0] mu;
-wire [8:0] maxrepeat;
+wire [9:0] maxrepeat;
 wire calc_clock;
 reg red, green, blue;
 reg calc_enable, disp_enable;
@@ -76,10 +76,28 @@ always @(posedge CLK or negedge RST) begin
             end else if(!key_d[3]) begin
                sample_num <= 3;
                logistic_RST <= 0;
+            end else if(!key_d[4]) begin
+               sample_num <= 4;
+               logistic_RST <= 0;
+            end else if(!key_c[0]) begin
+               sample_num <= 5;
+               logistic_RST <= 0;
+            end else if(!key_c[1]) begin
+               sample_num <= 6;
+               logistic_RST <= 0;
+            end else if(!key_c[2]) begin
+               sample_num <= 7;
+               logistic_RST <= 0;
+            end else if(!key_c[3]) begin
+               sample_num <= 8;
+               logistic_RST <= 0;
+            end else if(!key_c[4]) begin
+               sample_num <= 9;
+               logistic_RST <= 0;
             end else begin
                logistic_RST <= 1;
             end
-            if(!key_d[0] || !key_d[1] || !key_d[2] || !key_d[3]) begin
+            if(!key_d[0] || !key_d[1] || !key_d[2] || !key_d[3] || !key_d[4] || !key_c[0] || !key_c[1] || !key_c[2] || !key_c[3] || !key_c[4]) begin
                key_state <= 2'd2;
             end else if(!vnotactive) 
                key_state <= 2'd0;

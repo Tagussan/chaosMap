@@ -3,6 +3,7 @@ module logisticModule(CLK,CLK_calc, RST, red, green, blue, row, col, mu, maxrepe
    input [8:0] maxrepeat;
    output red, green, blue;
    input [9:0] row, col;
+   wire [9:0] row_inverse;
    input [17:0] mu;
    wire [16:0] A_result, B_result, C_result, D_result, E_result, F_result, G_result;
    wire [33:0] B_result_dbg;
@@ -23,27 +24,27 @@ module logisticModule(CLK,CLK_calc, RST, red, green, blue, row, col, mu, maxrepe
    assign D_row = D_result >> 8;
    assign E_row = E_result >> 8;
    assign F_row = F_result >> 8;
-   assign G_row = G_result >> 8;
+   //assign G_row = G_result >> 8;
    function [2:0] colorselect;
       input [9:0] row,col;
-      if(0 < col && col <= 20 && A_row <= row && row <= A_row + 5)
+      if(0 < col && col <= 110 && A_row <= row && row <= A_row + 5)
          colorselect = 3'b001;
-      else if (20 < col && col <= 40 && B_row <= row && row <= B_row + 5)
+      else if (110 < col && col <= 220 && B_row <= row && row <= B_row + 5)
          colorselect = 3'b011;
-      else if (40 < col && col <= 60 && C_row <= row && row <= C_row + 5)
+      else if (220 < col && col <= 330 && C_row <= row && row <= C_row + 5)
          colorselect = 3'b100;
-      else if (60 < col && col <= 80 && D_row <= row && row <= D_row + 5)
+      else if (330 < col && col <= 440 && D_row <= row && row <= D_row + 5)
          colorselect = 3'b010;
-      else if (80 < col && col <= 100 && E_row <= row && row <= E_row + 5)
+      else if (440 < col && col <= 550 && E_row <= row && row <= E_row + 5)
          colorselect = 3'b101;
-      else if (100 < col && col <= 120 && F_row <= row && row <= F_row + 5)
+      else if (550 < col && col <= 660 && F_row <= row && row <= F_row + 5)
             colorselect = 3'b110;
-      else if (120 < col && col <= 140 && G_row <= row && row <= G_row + 5)
-         colorselect = 3'b000;
+      //else if (660 < col && col <= 770 && G_row <= row && row <= G_row + 5)
+      //   colorselect = 3'b000;
       else
          colorselect = 3'b111;
    endfunction
-   assign colorbits = colorselect(row, col);
+   assign colorbits = colorselect(row_inverse, col);
    assign {red,green,blue} = colorbits;
 endmodule
 
