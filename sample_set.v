@@ -1,13 +1,11 @@
-module sample_set(CLK, RST, sample_num, mu, maxrepeat, calc_clock);
+module sample_set(CLK, RST, sample_num, mu, calc_clock);
    input [5:0] sample_num;
    input CLK, RST;
    output [17:0] mu;
-   output [9:0] maxrepeat;
    output calc_clock;
    wire CLK_SLOW, CLK_VERY_SLOW;
    divider_very_slow divider_very_slow(.clk(CLK), .rst(RST), .clkout(CLK_VERY_SLOW));
    divider_slow divider_slow(.clk(CLK), .rst(RST), .clkout(CLK_SLOW));
-   //sample 0: a = 0.99, SLOW
    function [17:0] select_mu;
       input [5:0] sample_num;
       case (sample_num)
@@ -25,15 +23,6 @@ module sample_set(CLK, RST, sample_num, mu, maxrepeat, calc_clock);
          default: select_mu = 0;
       endcase
    endfunction
-   function [12:0] select_maxrepeat;
-      input [5:0] sample_num;
-      case (sample_num)
-         0:     select_maxrepeat = 512;
-         1:     select_maxrepeat = 512;
-         2:     select_maxrepeat = 512;
-         default: select_maxrepeat = 512;
-      endcase
-   endfunction
    function select_CLK;
       input [5:0] sample_num;
       case (sample_num)
@@ -44,6 +33,5 @@ module sample_set(CLK, RST, sample_num, mu, maxrepeat, calc_clock);
       endcase
    endfunction
    assign mu = select_mu(sample_num);
-   assign maxrepeat = select_maxrepeat(sample_num);
    assign calc_clock = select_CLK(sample_num);
 endmodule

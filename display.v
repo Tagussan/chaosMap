@@ -6,7 +6,6 @@ output red, green, blue;
 wire CLK_VERY_SLOW, CLK_SLOW;
 wire red_bar, green_bar, blue_bar;
 wire [17:0] mu;
-wire [9:0] maxrepeat;
 wire calc_clock;
 reg red, green, blue;
 reg calc_enable, disp_enable;
@@ -29,9 +28,9 @@ always @(posedge CLK or negedge RST) begin
    end
 end
 
-logisticModule logisticModule(.CLK(calc_clock & calc_enable), .CLK_calc(CLK), .RST(logistic_RST), .red(red_bar), .green(green_bar), .blue(blue_bar), .row(row), .col(col), .mu(mu), .maxrepeat(maxrepeat));
+logisticModule logisticModule(.CLK(calc_clock & calc_enable), .CLK_calc(CLK), .RST(logistic_RST), .red(red_bar), .green(green_bar), .blue(blue_bar), .row(row), .col(col), .mu(mu));
 
-sample_set sample_set(.CLK(CLK), .RST(RST), .sample_num(sample_num), .mu(mu), .maxrepeat(maxrepeat), .calc_clock(calc_clock));
+sample_set sample_set(.CLK(CLK), .RST(RST), .sample_num(sample_num), .mu(mu), .calc_clock(calc_clock));
 
 divider_slow divider_slow(.clk(CLK), .rst(RST), .clkout(CLK_SLOW));
 divider_very_slow divider_very_slow(.clk(CLK), .rst(RST), .clkout(CLK_VERY_SLOW));
