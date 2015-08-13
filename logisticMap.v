@@ -55,7 +55,7 @@ module logisticModule(CLK,CLK_calc, RST, red, green, blue, row, col, mu, maxrepe
    assign {red,green,blue} = colorbits;
 endmodule
 
-module logisticCycle(CLK, RST, done, dzero, times, mu, result);
+module logisticCycle(CLK, RST, dzero, mu, result);
 //Dset to set initial data
 //dzero is initial data
 //done to show completed mapping for "times"
@@ -63,26 +63,15 @@ module logisticCycle(CLK, RST, done, dzero, times, mu, result);
 //repeating and stop sanitary
    input CLK, RST;
    input [16:0] dzero;
-   input [8:0] times;
    input [17:0] mu;
    wire [16:0] funcIn, funcOut;
    output [16:0] result;
-   output done;
-   reg [8:0] ind; //ind as how many times mapped
-   reg done;
    reg [16:0] result;
    always @(posedge CLK) begin
-      if(RST == 0 || ind == 0) begin
-         done <= 'b0;
+      if(RST == 0) begin
          result <= dzero;
-         ind <= 1;
       end else begin
-         if(ind == times) begin
-            done <= 1;
-         end else begin
-            result <= funcOut;
-            ind <= ind + 1;
-         end
+          result <= funcOut;
       end
    end
    logisticFunc logisticFunc(.x(result), .mu(mu), .y(funcOut));
@@ -94,60 +83,45 @@ module logisticFunc(x,mu,y);
    output [16:0] y;
    wire [33:0] term;
    wire [34:0] enlarge;
-   assign term = x * (17'h1_0000_0000_0000_0000 - x);
-   //assign enlarge = mu * term[33:16];
-   //assign y = enlarge[34:18];
-   assign y = term[16:0]; //for debug
+   assign term = x * (17'b1_0000_0000_0000_0000 - x);
+   assign enlarge = mu * term[33:16];
+   assign y = enlarge[32:16];
 endmodule
 
-module logisticCycleTiny(CLK, CLK_calc,RST, done, dzero, times, mu, result);
+module logisticCycleTiny(CLK, CLK_calc,RST, dzero, mu, result);
 //Dset to set initial data
 //dzero is initial data
-//done to show completed mapping for "times"
-//times to map times
 //repeating and stop sanitary
 //CLK is slower than CLK_calc
    input CLK, RST, CLK_calc;
    input [16:0] dzero;
-   input [8:0] times;
    input [17:0] mu;
    wire [16:0] funcIn, funcOut;
    output [16:0] result;
-   output done;
-   reg [8:0] ind; //ind as how many times mapped
-   reg done;
    reg [16:0] result;
    reg [16:0] temp;
    wire calc_done_wire;
    reg calc_start;
-   reg calc_done;
    reg [3:0] progress;
    always @(posedge CLK) begin
       if(RST == 0) begin
-         done <= 'b0;
          temp <= dzero;
-         ind <= 1;
          progress <= 0;
          calc_start <= 0;
       end else begin
-         if(ind == times) begin
-            done <= 1;
-         end else begin
-            if(progress == 0 && calc_done_wire == 0) begin
-               calc_start <= 1;
-               progress <= 1;
-            end else if(progress == 1 && calc_done_wire == 1) begin
-               result <= funcOut;
-               ind <= ind + 1;
-               progress <= 2;
-            end else if(progress == 2) begin
-               calc_start <= 0;
-               progress <= 3;
-            end else if(progress == 3 && calc_done_wire == 0) begin
-               temp <= result;
-               progress <= 0;
-            end
-         end
+          if(progress == 0 && calc_done_wire == 0) begin
+              calc_start <= 1;
+              progress <= 1;
+          end else if(progress == 1 && calc_done_wire == 1) begin
+              result <= funcOut;
+              progress <= 2;
+          end else if(progress == 2) begin
+              calc_start <= 0;
+              progress <= 3;
+          end else if(progress == 3 && calc_done_wire == 0) begin
+              temp <= result;
+              progress <= 0;
+          end
       end
    end
    logisticFuncTiny logisticFuncTiny(.x(temp), .mu(mu), .y(funcOut), .CLK(CLK_calc), .calc_start(calc_start), .done(calc_done_wire));
@@ -166,11 +140,10 @@ module logisticFuncTiny(x,mu,y,CLK,calc_start,done);
    reg [33:0] term;
    reg [34:0] enlarge;
    reg [3:0] progress;
-   reg RST;
    wire submult_done;
    wire [35:0] submult_result;
    reg submult_start;
-   myMult18 myMult18(.CLK(CLK), .RST(RST), .dataa(dataa), .datab(datab), .result(submult_result), .done(submult_done), .calc_start(submult_start));
+   myMult18 myMult18(.CLK(CLK), .dataa(dataa), .datab(datab), .result(submult_result), .done(submult_done), .calc_start(submult_start));
    always @(posedge CLK) begin
       if(calc_start == 0) begin
          progress <= 0;
@@ -181,17 +154,14 @@ module logisticFuncTiny(x,mu,y,CLK,calc_start,done);
          datab <= 0;
          done <= 0;
          y <= 0;
-         RST <= 0;
       end else begin
          if(progress == 0 && submult_done == 0) begin
-            RST <= 0;
             dataa <= x;
-            datab <= (17'h1_0000_0000_0000_0000 - x);
+            datab <= (17'b1_0000_0000_0000_0000 - x);
             progress <= 1;
             submult_start <= 0;
             done <= 0;
          end else if(progress == 1) begin
-            RST <= 1;
             submult_start <= 1;
             progress <= 2;
             done <= 0;
@@ -200,21 +170,19 @@ module logisticFuncTiny(x,mu,y,CLK,calc_start,done);
             progress <= 3;
             done <= 0;
          end else if(progress == 3) begin
-            RST <= 0;
             dataa <= mu;
             datab <= term[33:16];
             progress <= 4;
             submult_start <= 0;
             done <= 0;
          end else if(progress == 4 && submult_done == 0) begin
-            RST <= 1;
             submult_start <= 1;
             progress <= 5;
          end else if(progress == 5 && submult_done == 1) begin
             enlarge <= submult_result[34:0];
             progress <= 6;
          end else if(progress == 6) begin
-            y <= enlarge[34:18];
+            y <= enlarge[32:16];
             progress <= 7;
          end else if(progress == 7) begin
             done <= 1;
