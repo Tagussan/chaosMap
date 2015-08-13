@@ -10,22 +10,14 @@ module logisticModule(CLK,CLK_calc, RST, red, green, blue, row, col, mu, maxrepe
    wire [34:0] A_result_dbgdbg;
    wire [9:0] A_row, B_row, C_row, D_row, E_row, F_row, G_row;
    wire [2:0] colorbits;
-   logisticCycleTiny A_cycle(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0000), .times(maxrepeat), .mu(mu), .result(A_result));
-   //myMult18 myMult18(.CLK(CLK_calc), .RST(RST), .calc_start(RST), .dataa(B_result_dbg[33:16]), .datab(mu), .result(A_result_dbgdbg));
-   //assign A_result = A_result_dbgdbg[34:18];
-   //logisticFuncTiny A_Tiny(.CLK(CLK_calc), .calc_start(RST), .x(17'b0_1000_0010_0100_0001), .mu(mu), .y(B_result));
-   logisticCycle B_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0001), .times(maxrepeat), .mu(mu), .result(B_result));
-   
-   //assign B_result_dbg = (17'b0_1000_0010_0100_0001 * (17'h1_0000_0000_0000_0000 - 17'b0_1000_0010_0100_0001));
-   //assign B_result_dbgdbg = mu * B_result_dbg[33:16];
-   //assign B_result = B_result_dbgdbg[34:18];
-   
-   logisticCycle C_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0010), .times(maxrepeat), .mu(mu), .result(C_result));
-   logisticCycle D_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0011), .times(maxrepeat), .mu(mu), .result(D_result));
-   logisticCycle E_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0100), .times(maxrepeat), .mu(mu), .result(E_result));
-   logisticCycle F_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0101), .times(maxrepeat), .mu(mu), .result(F_result));
-   logisticCycle G_cycle(.CLK(CLK), .RST(RST), .dzero(17'b0_1000_0010_0100_0110), .times(maxrepeat), .mu(mu), .result(G_result));
-   assign A_row = A_result >> 8;
+   logisticCycleTiny A_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0000), .times(maxrepeat), .mu(mu), .result(C_result));
+   logisticCycleTiny B_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0001), .times(maxrepeat), .mu(mu), .result(C_result));
+   logisticCycleTiny C_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0010), .times(maxrepeat), .mu(mu), .result(C_result));
+   logisticCycleTiny D_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0011), .times(maxrepeat), .mu(mu), .result(D_result));
+   logisticCycleTiny E_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0100), .times(maxrepeat), .mu(mu), .result(E_result));
+   logisticCycleTiny F_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0101), .times(maxrepeat), .mu(mu), .result(F_result));
+   logisticCycleTiny G_cycleTiny(.CLK(CLK), .CLK_calc(CLK_calc), .RST(RST), .dzero(17'b0_1000_0010_0100_0110), .times(maxrepeat), .mu(mu), .result(G_result));
+   assign A_row Tiny= A_result >> 8;
    assign B_row = B_result >> 8;
    assign C_row = C_result >> 8;
    assign D_row = D_result >> 8;
